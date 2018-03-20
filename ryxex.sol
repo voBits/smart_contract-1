@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.10;
 
 contract SafeMath {
   function safeMul(uint a, uint b) internal returns (uint) {
@@ -166,7 +166,7 @@ contract RYXEX is SafeMath {
   event Withdraw(address token, address user, uint amount, uint balance);
 
   function RYXEX(address admin_, address feeAccount_, address accountLevelsAddr_, uint feeMake_, uint feeTake_, uint feeRebate_) {
-    admin = msg.sender;
+    admin = admin_;
     feeAccount = feeAccount_;
     accountLevelsAddr = accountLevelsAddr_;
     feeMake = feeMake_;
