@@ -69,15 +69,15 @@ if (cliOptions.help) {
   web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
   // Config
-  const solidityFile = './smart_contract/ryxex.sol';
-  const contractName = 'RYXEX';
-  const solcVersion = 'v0.4.10+commit.f0d539ae';
+  const solidityFile = './smart_contract/etherdelta.sol';
+  const contractName = 'EtherDelta';
+  const solcVersion = 'v0.4.9+commit.364da425';
   const address = cliOptions.address;
   const admin = cliOptions.admin;
   const feeAccount = cliOptions.feeAccount;
   const accountLevelsAddr = cliOptions.accountLevelsAddr;
   const feeMake = 0;
-  const feeTake = 0;
+  const feeTake = 3000000000000000;
   const feeRebate = 0;
   const gas = 2000000;
   const args = [admin, feeAccount, accountLevelsAddr, feeMake, feeTake, feeRebate];
