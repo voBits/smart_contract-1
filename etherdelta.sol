@@ -1,4 +1,4 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.4.10;
 
 contract SafeMath {
   function safeMul(uint a, uint b) internal returns (uint) {
@@ -19,41 +19,41 @@ contract SafeMath {
   }
 
   function assert(bool assertion) internal {
-    if (!assertion) throw;
+    if (!assertion) revert();
   }
 }
 
 contract Token {
   /// @return total amount of tokens
-  function totalSupply() constant returns (uint256 supply) {}
+  function totalSupply() constant returns (uint256 supply);
 
   /// @param _owner The address from which the balance will be retrieved
   /// @return The balance
-  function balanceOf(address _owner) constant returns (uint256 balance) {}
+  function balanceOf(address _owner) constant returns (uint256 balance);
 
   /// @notice send `_value` token to `_to` from `msg.sender`
   /// @param _to The address of the recipient
   /// @param _value The amount of token to be transferred
   /// @return Whether the transfer was successful or not
-  function transfer(address _to, uint256 _value) returns (bool success) {}
+  function transfer(address _to, uint256 _value) returns (bool success);
 
   /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
   /// @param _from The address of the sender
   /// @param _to The address of the recipient
   /// @param _value The amount of token to be transferred
   /// @return Whether the transfer was successful or not
-  function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {}
+  function transferFrom(address _from, address _to, uint256 _value) returns (bool success);
 
   /// @notice `msg.sender` approves `_addr` to spend `_value` tokens
   /// @param _spender The address of the account able to transfer the tokens
   /// @param _value The amount of wei to be approved for transfer
   /// @return Whether the approval was successful or not
-  function approve(address _spender, uint256 _value) returns (bool success) {}
+  function approve(address _spender, uint256 _value) returns (bool success);
 
   /// @param _owner The address of the account owning tokens
   /// @param _spender The address of the account able to transfer the tokens
   /// @return Amount of remaining tokens allowed to spent
-  function allowance(address _owner, address _spender) constant returns (uint256 remaining) {}
+  function allowance(address _owner, address _spender) constant returns (uint256 remaining);
 
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -116,13 +116,13 @@ contract ReserveToken is StandardToken, SafeMath {
     minter = msg.sender;
   }
   function create(address account, uint amount) {
-    if (msg.sender != minter) throw;
+    if (msg.sender != minter) revert();
     balances[account] = safeAdd(balances[account], amount);
     totalSupply = safeAdd(totalSupply, amount);
   }
   function destroy(address account, uint amount) {
-    if (msg.sender != minter) throw;
-    if (balances[account] < amount) throw;
+    if (msg.sender != minter) revert();
+    if (balances[account] < amount) revert();
     balances[account] = safeSub(balances[account], amount);
     totalSupply = safeSub(totalSupply, amount);
   }
@@ -133,7 +133,7 @@ contract AccountLevels {
   //0 = regular user (pays take fee and make fee)
   //1 = market maker silver (pays take fee, no make fee, gets rebate)
   //2 = market maker gold (pays take fee, no make fee, gets entire counterparty's take fee as rebate)
-  function accountLevel(address user) constant returns(uint) {}
+  function accountLevel(address user) constant returns(uint);
 }
 
 contract AccountLevelsTest is AccountLevels {
@@ -148,7 +148,7 @@ contract AccountLevelsTest is AccountLevels {
   }
 }
 
-contract EtherDelta is SafeMath {
+contract RyxEx is SafeMath {
   address public admin; //the admin address
   address public feeAccount; //the account that will receive fees
   address public accountLevelsAddr; //the address of the AccountLevels contract
@@ -165,7 +165,7 @@ contract EtherDelta is SafeMath {
   event Deposit(address token, address user, uint amount, uint balance);
   event Withdraw(address token, address user, uint amount, uint balance);
 
-  function EtherDelta(address admin_, address feeAccount_, address accountLevelsAddr_, uint feeMake_, uint feeTake_, uint feeRebate_) {
+  function RyxEx(address admin_, address feeAccount_, address accountLevelsAddr_, uint feeMake_, uint feeTake_, uint feeRebate_) {
     admin = admin_;
     feeAccount = feeAccount_;
     accountLevelsAddr = accountLevelsAddr_;
@@ -175,39 +175,36 @@ contract EtherDelta is SafeMath {
   }
 
   function() {
-    throw;
+    revert();
   }
 
   function changeAdmin(address admin_) {
-    if (msg.sender != admin) throw;
+    if (msg.sender != admin) revert();
     admin = admin_;
   }
 
   function changeAccountLevelsAddr(address accountLevelsAddr_) {
-    if (msg.sender != admin) throw;
+    if (msg.sender != admin) revert();
     accountLevelsAddr = accountLevelsAddr_;
   }
 
   function changeFeeAccount(address feeAccount_) {
-    if (msg.sender != admin) throw;
+    if (msg.sender != admin) revert();
     feeAccount = feeAccount_;
   }
 
   function changeFeeMake(uint feeMake_) {
-    if (msg.sender != admin) throw;
-    if (feeMake_ > feeMake) throw;
+    if (msg.sender != admin) revert();
     feeMake = feeMake_;
   }
 
   function changeFeeTake(uint feeTake_) {
-    if (msg.sender != admin) throw;
-    if (feeTake_ > feeTake || feeTake_ < feeRebate) throw;
+    if (msg.sender != admin) revert();
     feeTake = feeTake_;
   }
 
   function changeFeeRebate(uint feeRebate_) {
-    if (msg.sender != admin) throw;
-    if (feeRebate_ < feeRebate || feeRebate_ > feeTake) throw;
+    if (msg.sender != admin) revert();
     feeRebate = feeRebate_;
   }
 
@@ -217,25 +214,25 @@ contract EtherDelta is SafeMath {
   }
 
   function withdraw(uint amount) {
-    if (tokens[0][msg.sender] < amount) throw;
+    if (tokens[0][msg.sender] < amount) revert();
     tokens[0][msg.sender] = safeSub(tokens[0][msg.sender], amount);
-    if (!msg.sender.call.value(amount)()) throw;
+    if (!msg.sender.call.value(amount)()) revert();
     Withdraw(0, msg.sender, amount, tokens[0][msg.sender]);
   }
 
   function depositToken(address token, uint amount) {
     //remember to call Token(address).approve(this, amount) or this contract will not be able to do the transfer on your behalf.
-    if (token==0) throw;
-    if (!Token(token).transferFrom(msg.sender, this, amount)) throw;
+    if (token==0) revert();
+    if (!Token(token).transferFrom(msg.sender, this, amount)) revert();
     tokens[token][msg.sender] = safeAdd(tokens[token][msg.sender], amount);
     Deposit(token, msg.sender, amount, tokens[token][msg.sender]);
   }
 
   function withdrawToken(address token, uint amount) {
-    if (token==0) throw;
-    if (tokens[token][msg.sender] < amount) throw;
+    if (token==0) revert();
+    if (tokens[token][msg.sender] < amount) revert();
     tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], amount);
-    if (!Token(token).transfer(msg.sender, amount)) throw;
+    if (!Token(token).transfer(msg.sender, amount)) revert();
     Withdraw(token, msg.sender, amount, tokens[token][msg.sender]);
   }
 
@@ -256,7 +253,7 @@ contract EtherDelta is SafeMath {
       (orders[user][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == user) &&
       block.number <= expires &&
       safeAdd(orderFills[user][hash], amount) <= amountGet
-    )) throw;
+    )) revert();
     tradeBalances(tokenGet, amountGet, tokenGive, amountGive, user, amount);
     orderFills[user][hash] = safeAdd(orderFills[user][hash], amount);
     Trade(tokenGet, amount, tokenGive, amountGive * amount / amountGet, user, msg.sender);
@@ -305,7 +302,7 @@ contract EtherDelta is SafeMath {
 
   function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, uint8 v, bytes32 r, bytes32 s) {
     bytes32 hash = sha256(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce);
-    if (!(orders[msg.sender][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == msg.sender)) throw;
+    if (!(orders[msg.sender][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == msg.sender)) revert();
     orderFills[msg.sender][hash] = amountGet;
     Cancel(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, msg.sender, v, r, s);
   }
